@@ -46,8 +46,7 @@ archives:
       - NOTICE
       - README.md
       - CHANGELOG.md
-      - src: .github/SECURITY.md
-        dst: SECURITY.md
+      - .github/SECURITY.md
       - src: docs/release.md
         dst: docs/release.md
 

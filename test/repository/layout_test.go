@@ -54,6 +54,24 @@ func TestDependabotTracksContainerDefinitions(t *testing.T) {
 	}
 }
 
+func TestReleaseArchivePreservesSecurityDocumentPath(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	content, err := os.ReadFile(filepath.Join(root, ".config", "goreleaser.yaml"))
+	if err != nil {
+		t.Fatalf("read GoReleaser configuration: %v", err)
+	}
+
+	configuration := string(content)
+	if !strings.Contains(configuration, "- .github/SECURITY.md") {
+		t.Fatal("release archive does not preserve .github/SECURITY.md")
+	}
+	if strings.Contains(configuration, "dst: SECURITY.md") {
+		t.Fatal("release archive flattens .github/SECURITY.md and breaks relative links")
+	}
+}
+
 func allowedTopLevelEntries() []string {
 	return []string{
 		".config",
