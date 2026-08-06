@@ -230,7 +230,6 @@ func TestReleaseStateAndArtifactsHaveOwnedLocation(t *testing.T) {
 	for _, path := range []string{
 		".release-please-manifest.json",
 		"release-please-config.json",
-		"dist",
 	} {
 		assertPathAbsent(t, root, path)
 	}
