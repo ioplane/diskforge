@@ -68,7 +68,7 @@ not generate a second changelog.
 │   ├── release.md                 verification and release operations
 │   └── safety-model.md            threat model and destructive guarantees
 ├── deployments/containers/        pinned development and release OCI images
-├── integration_test.go            isolated loop-backed write acceptance
+├── test/integration/               isolated loop-backed write acceptance
 ├── compose.yaml                   canonical Compose development interface
 ├── go.mod                         github.com/ioplane/diskforge
 └── diskforge.go                   stable public facade and domain types

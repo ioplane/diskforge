@@ -26,6 +26,25 @@ func TestContainerDefinitionsHaveOwnedLocation(t *testing.T) {
 	}
 }
 
+func TestIntegrationTestHasOwnedLocation(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	for _, path := range []string{
+		"test/integration/diskforge_test.go",
+		"test/integration/testdata/proc-swaps",
+	} {
+		assertPathExists(t, root, path)
+	}
+
+	for _, path := range []string{
+		"integration_test.go",
+		"testdata",
+	} {
+		assertPathAbsent(t, root, path)
+	}
+}
+
 func repositoryRoot(t *testing.T) string {
 	t.Helper()
 

@@ -1,6 +1,6 @@
 //go:build integration && linux
 
-package diskforge_test
+package integration_test
 
 import (
 	"bytes"
