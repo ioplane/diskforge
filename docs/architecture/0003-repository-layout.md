@@ -150,9 +150,10 @@ no tool- or agent-specific design directory is added.
 
 ## Root layout contract
 
-`test/repository/layout_test.go` enforces the approved top-level allowlist. It
-permits the Git metadata directory and the ignored `.artifacts` output tree but
-rejects unexpected top-level files or directories. This is a Go test executed
+`test/repository/layout_test.go` enforces the approved top-level allowlist over
+paths returned by `git ls-files`. It rejects unexpected tracked top-level files
+or directories without rejecting repository-supported local state covered by
+`.gitignore`, such as generated `.artifacts` output. This is a Go test executed
 inside the development container; no shell validation script is introduced.
 
 The contract also checks that required files and directories exist and that
