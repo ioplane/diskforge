@@ -39,6 +39,21 @@ func TestUnexpectedTopLevelEntries(t *testing.T) {
 	}
 }
 
+func TestDependabotTracksContainerDefinitions(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	content, err := os.ReadFile(filepath.Join(root, ".github", "dependabot.yml"))
+	if err != nil {
+		t.Fatalf("read Dependabot configuration: %v", err)
+	}
+
+	const dockerConfiguration = "package-ecosystem: docker\n    directory: /deployments/containers"
+	if !strings.Contains(string(content), dockerConfiguration) {
+		t.Fatalf("Dependabot Docker configuration does not use /deployments/containers")
+	}
+}
+
 func allowedTopLevelEntries() []string {
 	return []string{
 		".config",
