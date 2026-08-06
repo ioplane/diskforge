@@ -25,6 +25,7 @@ const (
 
 //nolint:paralleltest // Loop allocation is host-global.
 func TestEngineWritesRawImageToIsolatedLoopDevice(t *testing.T) {
+	requireIsolatedSwapView(t)
 	temporaryDirectory := t.TempDir()
 	sourcePath := filepath.Join(temporaryDirectory, "diskforge-integration.raw")
 	backingPath := filepath.Join(temporaryDirectory, "diskforge-loop-backing.raw")
@@ -77,6 +78,18 @@ func TestEngineWritesRawImageToIsolatedLoopDevice(t *testing.T) {
 	}
 	if !bytes.Equal(written[len(imageContent):], make([]byte, integrationDiskBytes-len(imageContent))) {
 		t.Fatal("write extended beyond the expected image size")
+	}
+}
+
+func requireIsolatedSwapView(t *testing.T) {
+	t.Helper()
+	content, err := os.ReadFile("/proc/swaps")
+	if err != nil {
+		t.Fatalf("read isolated swap view: %v", err)
+	}
+	lines := bytes.FieldsFunc(content, func(character rune) bool { return character == '\n' })
+	if len(lines) != 1 {
+		t.Fatalf("integration swap view contains active entries: %q", content)
 	}
 }
 

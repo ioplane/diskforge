@@ -3,7 +3,6 @@
 package linux
 
 import (
-	"bufio"
 	"context"
 	"crypto/subtle"
 	"errors"
@@ -146,30 +145,14 @@ func (system *System) Mlockall() error {
 
 // Swapoff disables every active swap area reported by procfs.
 func (system *System) Swapoff() error {
-	path := filepath.Join(system.Observer.ProcRoot, "swaps")
-	// #nosec G304 -- procfs root is an explicit System dependency.
-	file, err := os.Open(path)
+	records, err := readSwapRecords(system.Observer.ProcRoot)
 	if err != nil {
-		return fmt.Errorf("open swaps: %w", err)
+		return err
 	}
-	defer file.Close()
-
-	scanner := bufio.NewScanner(file)
-	first := true
-	for scanner.Scan() {
-		if first {
-			first = false
-			continue
+	for _, record := range records {
+		if err := swapoff(record.source); err != nil {
+			return fmt.Errorf("swapoff %s: %w", record.source, err)
 		}
-		fields := strings.Fields(scanner.Text())
-		if len(fields) > 0 {
-			if err := swapoff(fields[0]); err != nil {
-				return fmt.Errorf("swapoff %s: %w", fields[0], err)
-			}
-		}
-	}
-	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("scan swaps: %w", err)
 	}
 
 	return nil
