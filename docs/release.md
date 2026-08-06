@@ -50,6 +50,20 @@ diskforge_<version>_linux_amd64.tar.gz
 Tags are immutable. A failed release is repaired with a new patch version; an
 existing tag or asset is not replaced silently.
 
+## Local release snapshot
+
+The pinned release container writes local GoReleaser output only below the
+ignored `.artifacts/release` tree:
+
+```console
+/opt/podman/bin/podman compose run --rm release-check
+/opt/podman/bin/podman compose run --rm release-snapshot
+```
+
+The snapshot must contain the Linux AMD64 archive, source archive, checksum
+file, and two SPDX 2.3 documents. Local artifacts are verification evidence;
+they are never committed.
+
 ## Consumer verification
 
 Set the expected release version and download the archive plus checksum:

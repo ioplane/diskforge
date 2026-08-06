@@ -117,7 +117,7 @@ if err != nil {
 The package exposes stable request, result, progress, and gate-error types.
 Callers can use `errors.As` with `*diskforge.GateError` and must not parse human
 messages. See the [API documentation](https://pkg.go.dev/github.com/ioplane/diskforge)
-and [architecture](docs/architecture.md).
+and [architecture](docs/architecture/README.md).
 
 ## Development
 
@@ -127,11 +127,14 @@ not part of the supported workflow.
 ```console
 /opt/podman/bin/podman build --pull=never \
   --tag localhost/ioplane/diskforge-dev:1.26.5 \
-  --file Containerfile.dev .
+  --file deployments/containers/development.Containerfile .
 /opt/podman/bin/podman compose run --rm test
 /opt/podman/bin/podman compose run --rm lint
 /opt/podman/bin/podman compose run --rm integration
 ```
+
+`release-snapshot` writes generated verification artifacts only below the
+ignored `.artifacts/release` tree.
 
 The integration service is privileged but can write only to the temporary
 loop-backed file it creates. Run services sequentially on memory-constrained
@@ -142,7 +145,7 @@ gate.
 
 | Document | Purpose |
 | --- | --- |
-| [Architecture](docs/architecture.md) | Components, trust boundaries, and data flow |
+| [Architecture](docs/architecture/README.md) | Components, trust boundaries, and data flow |
 | [Safety model](docs/safety-model.md) | Refusal rules and destructive guarantees |
 | [CLI reference](docs/cli.md) | Commands, JSON streams, and exit codes |
 | [Naming contract](docs/contracts/naming.md) | Mandatory public and artifact naming rules |
@@ -158,10 +161,10 @@ Versioning; incompatible changes are documented before release.
 
 ## Contributing and support
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before proposing changes. Security
-reports follow [SECURITY.md](SECURITY.md); general help follows
-[SUPPORT.md](SUPPORT.md). Community participation is governed by the
-[Code of Conduct](CODE_OF_CONDUCT.md).
+Read [CONTRIBUTING.md](.github/CONTRIBUTING.md) before proposing changes.
+Security reports follow [SECURITY.md](.github/SECURITY.md); general help follows
+[SUPPORT.md](.github/SUPPORT.md). Community participation is governed by the
+[Code of Conduct](.github/CODE_OF_CONDUCT.md).
 
 ## License
 

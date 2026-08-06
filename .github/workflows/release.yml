@@ -46,13 +46,13 @@ jobs:
         run: >-
           sudo podman build --pull=always
           --tag localhost/ioplane/diskforge-dev:1.26.5
-          --file Containerfile.dev .
+          --file deployments/containers/development.Containerfile .
 
       - name: Build release image
         run: >-
           sudo podman build --pull=always
           --tag localhost/ioplane/diskforge-release:2.17.1
-          --file Containerfile.release .
+          --file deployments/containers/release.Containerfile .
 
       - name: Verify release tree
         run: sudo podman compose run --rm modcheck
@@ -105,6 +105,6 @@ jobs:
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: |
-            dist/*.tar.gz
-            dist/*_checksums.txt
-            dist/*.spdx.json
+            .artifacts/release/*.tar.gz
+            .artifacts/release/*_checksums.txt
+            .artifacts/release/*.spdx.json

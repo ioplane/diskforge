@@ -57,6 +57,8 @@ not generate a second changelog.
 
 ```text
 .
+├── .config/                       explicit quality and release configuration
+├── .github/                       community health and GitHub automation
 ├── cmd/diskforge/                 CLI parsing, JSON output, and exit mapping
 ├── internal/image/                verification, staging, raw/zstd streaming
 ├── internal/linux/                procfs, sysfs, mounts, swap, and syscalls
@@ -67,8 +69,8 @@ not generate a second changelog.
 │   ├── development.md             container-only contributor workflow
 │   ├── release.md                 verification and release operations
 │   └── safety-model.md            threat model and destructive guarantees
-├── integration_test.go            isolated loop-backed write acceptance
-├── Containerfile.dev              pinned development and verification image
+├── deployments/containers/        pinned development and release OCI images
+├── test/integration/               isolated loop-backed write acceptance
 ├── compose.yaml                   canonical Compose development interface
 ├── go.mod                         github.com/ioplane/diskforge
 └── diskforge.go                   stable public facade and domain types
@@ -218,7 +220,8 @@ may perform a destructive write against an unresolved or host-provided device.
 
 All jobs use Blacksmith Ubuntu 24.04 runners. Checkout and runner hardening are
 orchestration steps; every Go build, format, lint, analysis, fuzz, and test
-command runs in a Podman container built from `Containerfile.dev`.
+command runs in a Podman container built from
+`deployments/containers/development.Containerfile`.
 
 ```mermaid
 flowchart TB
@@ -243,8 +246,8 @@ write-capable tokens.
 
 Release Please `17.11.1` with release-please-action `5.0.0` runs on pushes to
 `main`. It maintains a release pull request from Conventional Commits. That PR
-updates `CHANGELOG.md` and `.release-please-manifest.json`. Merging it creates a
-`vMAJOR.MINOR.PATCH` tag and the corresponding GitHub Release.
+updates `CHANGELOG.md` and `.config/release-please/manifest.json`. Merging it
+creates a `vMAJOR.MINOR.PATCH` tag and the corresponding GitHub Release.
 
 The action uses a repository-scoped `RELEASE_PLEASE_TOKEN` with only the access
 needed to maintain the release pull request and publish the release. A token
@@ -303,7 +306,8 @@ consistency, scope, and maintainability.
 ## 12. Repository governance and documentation
 
 All prose is English. Required root documents are `README.md`, `LICENSE`,
-`NOTICE`, `CHANGELOG.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
+`NOTICE`, and `CHANGELOG.md`. Community health and governance documents live
+under `.github`: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
 `SUPPORT.md`, `GOVERNANCE.md`, and `MAINTAINERS.md`.
 
 GitHub metadata includes CODEOWNERS, issue forms, a pull-request template,

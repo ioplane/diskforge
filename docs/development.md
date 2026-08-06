@@ -16,8 +16,9 @@ tags:
 
 Every code-generating, formatting, dependency, analysis, test, and build tool
 runs inside `localhost/ioplane/diskforge-dev:1.26.5`, built from the pinned
-`Containerfile.dev`. Podman is the supported OCI runtime. Host-installed Go,
-Python, Node.js, linters, and release tools are outside the evidence boundary.
+`deployments/containers/development.Containerfile`. Podman is the supported OCI
+runtime. Host-installed Go, Python, Node.js, linters, and release tools are
+outside the evidence boundary.
 
 On macOS, configure a rootful Podman Desktop machine and invoke the Podman
 Desktop binary explicitly when multiple installations exist:
@@ -35,7 +36,7 @@ so parallel service creation cannot trigger duplicate image builds.
 ```console
 /opt/podman/bin/podman build --pull=never \
   --tag localhost/ioplane/diskforge-dev:1.26.5 \
-  --file Containerfile.dev .
+  --file deployments/containers/development.Containerfile .
 ```
 
 The image contains exact tool versions and pinned multi-stage base digests.
@@ -72,6 +73,10 @@ Run services sequentially on Podman Desktop:
 /opt/podman/bin/podman compose run --rm integration
 ```
 
+Project-owned quality and release configuration lives under `.config`. Compose
+passes each configuration path explicitly; direct tool invocations must do the
+same instead of relying on root-file discovery.
+
 Independent analyzers can use the same read-only service image:
 
 ```console
@@ -83,12 +88,14 @@ Independent analyzers can use the same read-only service image:
 ## Static release build
 
 Release configuration builds with `CGO_ENABLED=0`, `-trimpath`, and deterministic
-linker flags. A local verification build writes only to ignored `dist/`:
+linker flags. A local verification build writes only to the ignored
+`.artifacts/release/` tree:
 
 ```console
 /opt/podman/bin/podman run --rm --network=none \
   --env CGO_ENABLED=0 --env GOOS=linux --env GOARCH=amd64 \
-  --volume "$PWD:/workspace:ro" --volume "$PWD/dist:/out:rw" \
+  --volume "$PWD:/workspace:ro" \
+  --volume "$PWD/.artifacts/release:/out:rw" \
   --workdir /workspace localhost/ioplane/diskforge-dev:1.26.5 \
   go build -trimpath -ldflags='-s -w -buildid=' \
   -o /out/diskforge ./cmd/diskforge

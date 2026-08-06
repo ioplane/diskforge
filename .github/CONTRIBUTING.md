@@ -15,7 +15,7 @@ Diskforge writes whole block devices. Changes are accepted only when their
 safety effect is explicit, tested, and reviewable.
 
 By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md)
-and license contributions under [Apache-2.0](LICENSE).
+and license contributions under [Apache-2.0](../LICENSE).
 
 ## Before opening a change
 
@@ -43,7 +43,7 @@ gate-code, or artifact-name changes. Release Please derives the SemVer change
 and changelog from these commits.
 
 Public names MUST follow the mandatory
-[naming contract](docs/contracts/naming.md). Human-readable error messages may
+[naming contract](../docs/contracts/naming.md). Human-readable error messages may
 improve; callers must use typed errors and stable gate codes.
 
 ## Development environment
@@ -56,7 +56,7 @@ On macOS with Podman Desktop, use its binary explicitly:
 ```console
 /opt/podman/bin/podman build --pull=never \
   --tag localhost/ioplane/diskforge-dev:1.26.5 \
-  --file Containerfile.dev .
+  --file deployments/containers/development.Containerfile .
 ```
 
 Run one-shot Compose services sequentially:
@@ -73,6 +73,10 @@ Run one-shot Compose services sequentially:
 /opt/podman/bin/podman compose run --rm docs
 /opt/podman/bin/podman compose run --rm integration
 ```
+
+Project-owned tool configuration lives under `.config`. Compose passes every
+non-default configuration path explicitly so verification does not depend on
+tool-specific discovery rules.
 
 The integration service requires a rootful Podman machine and privileged
 container. It allocates a free loop device, creates a bounded temporary backing

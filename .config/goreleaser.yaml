@@ -2,6 +2,7 @@
 version: 2
 
 project_name: diskforge
+dist: .artifacts/release
 
 before:
   hooks:
@@ -45,7 +46,7 @@ archives:
       - NOTICE
       - README.md
       - CHANGELOG.md
-      - SECURITY.md
+      - .github/SECURITY.md
       - src: docs/release.md
         dst: docs/release.md
 

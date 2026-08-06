@@ -1,6 +1,6 @@
 //go:build integration && linux
 
-package diskforge_test
+package integration_test
 
 import (
 	"bytes"
@@ -166,26 +166,41 @@ func attachLoopDevice(t *testing.T, backingPath string) string {
 	}
 
 	t.Cleanup(func() {
-		descriptor, openErr := unix.Open(devicePath, unix.O_RDWR|unix.O_CLOEXEC, 0)
-		if openErr == nil {
-			if detachErr := unix.IoctlSetInt(descriptor, unix.LOOP_CLR_FD, 0); detachErr != nil &&
-				!errors.Is(detachErr, unix.ENXIO) {
-				t.Errorf("detach loop device: %v", detachErr)
-			}
-			if closeErr := unix.Close(descriptor); closeErr != nil {
-				t.Errorf("close loop device during cleanup: %v", closeErr)
-			}
-		} else if !errors.Is(openErr, unix.ENOENT) {
-			t.Errorf("open loop device during cleanup: %v", openErr)
-		}
+		detachLoopDevice(t, devicePath)
 		if createdNode {
-			if removeErr := os.Remove(devicePath); removeErr != nil && !errors.Is(removeErr, os.ErrNotExist) {
-				t.Errorf("remove loop device node: %v", removeErr)
-			}
+			removeLoopDeviceNode(t, devicePath)
 		}
 	})
 
 	return devicePath
+}
+
+func detachLoopDevice(t *testing.T, devicePath string) {
+	t.Helper()
+
+	descriptor, err := unix.Open(devicePath, unix.O_RDWR|unix.O_CLOEXEC, 0)
+	if errors.Is(err, unix.ENOENT) {
+		return
+	}
+	if err != nil {
+		t.Errorf("open loop device during cleanup: %v", err)
+
+		return
+	}
+	if err := unix.IoctlSetInt(descriptor, unix.LOOP_CLR_FD, 0); err != nil && !errors.Is(err, unix.ENXIO) {
+		t.Errorf("detach loop device: %v", err)
+	}
+	if err := unix.Close(descriptor); err != nil {
+		t.Errorf("close loop device during cleanup: %v", err)
+	}
+}
+
+func removeLoopDeviceNode(t *testing.T, devicePath string) {
+	t.Helper()
+
+	if err := os.Remove(devicePath); err != nil && !errors.Is(err, os.ErrNotExist) {
+		t.Errorf("remove loop device node: %v", err)
+	}
 }
 
 func createLoopDeviceNode(t *testing.T, path string, deviceNumber int) bool {
