@@ -73,6 +73,10 @@ Run services sequentially on Podman Desktop:
 /opt/podman/bin/podman compose run --rm integration
 ```
 
+Project-owned quality and release configuration lives under `.config`. Compose
+passes each configuration path explicitly; direct tool invocations must do the
+same instead of relying on root-file discovery.
+
 Independent analyzers can use the same read-only service image:
 
 ```console

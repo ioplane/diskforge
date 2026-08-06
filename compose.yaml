@@ -48,7 +48,7 @@ services:
 
   lint:
     <<: *verification-service
-    command: ["golangci-lint", "run", "--config", ".golangci.yml"]
+    command: ["golangci-lint", "run", "--config", ".config/golangci.yml"]
 
   lint-integration:
     <<: *verification-service
@@ -56,7 +56,7 @@ services:
       - golangci-lint
       - run
       - --config
-      - .golangci.yml
+      - .config/golangci.yml
       - --build-tags
       - integration
 
@@ -142,9 +142,9 @@ services:
       - sh
       - -ec
       - >-
-        markdownlint-cli2 "**/*.md" &&
-        cspell "**/*.{go,md,yaml,yml}" &&
-        yamllint --strict .
+        markdownlint-cli2 --config .config/markdownlint-cli2.yaml "**/*.md" &&
+        cspell --config .config/cspell.json "**/*.{go,md,yaml,yml}" &&
+        yamllint --config-file .config/yamllint.yml --strict .
 
   actions:
     <<: *verification-service
@@ -162,7 +162,7 @@ services:
   release-check:
     <<: *release-service
     network_mode: none
-    command: ["goreleaser", "check"]
+    command: ["goreleaser", "check", ".config/goreleaser.yaml"]
 
   release-snapshot:
     <<: *release-service
@@ -174,6 +174,8 @@ services:
     command:
       - goreleaser
       - release
+      - --config
+      - .config/goreleaser.yaml
       - --snapshot
       - --clean
       - --skip=sign,publish
@@ -193,4 +195,9 @@ services:
       ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}
     volumes:
       - .:/workspace:rw
-    command: ["goreleaser", "release", "--clean"]
+    command:
+      - goreleaser
+      - release
+      - --config
+      - .config/goreleaser.yaml
+      - --clean

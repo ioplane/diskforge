@@ -57,6 +57,7 @@ not generate a second changelog.
 
 ```text
 .
+├── .config/                       explicit quality and release configuration
 ├── cmd/diskforge/                 CLI parsing, JSON output, and exit mapping
 ├── internal/image/                verification, staging, raw/zstd streaming
 ├── internal/linux/                procfs, sysfs, mounts, swap, and syscalls

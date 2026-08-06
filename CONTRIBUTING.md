@@ -74,6 +74,10 @@ Run one-shot Compose services sequentially:
 /opt/podman/bin/podman compose run --rm integration
 ```
 
+Project-owned tool configuration lives under `.config`. Compose passes every
+non-default configuration path explicitly so verification does not depend on
+tool-specific discovery rules.
+
 The integration service requires a rootful Podman machine and privileged
 container. It allocates a free loop device, creates a bounded temporary backing
 file, compares every written byte, detaches the loop device, and removes the

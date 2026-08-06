@@ -45,6 +45,31 @@ func TestIntegrationTestHasOwnedLocation(t *testing.T) {
 	}
 }
 
+func TestToolConfigurationHasOwnedLocation(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	for _, path := range []string{
+		".config/cspell.json",
+		".config/golangci.yml",
+		".config/goreleaser.yaml",
+		".config/markdownlint-cli2.yaml",
+		".config/yamllint.yml",
+	} {
+		assertPathExists(t, root, path)
+	}
+
+	for _, path := range []string{
+		".cspell.json",
+		".golangci.yml",
+		".goreleaser.yaml",
+		".markdownlint-cli2.yaml",
+		".yamllint.yml",
+	} {
+		assertPathAbsent(t, root, path)
+	}
+}
+
 func repositoryRoot(t *testing.T) string {
 	t.Helper()
 
