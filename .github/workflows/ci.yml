@@ -42,13 +42,13 @@ jobs:
         run: >-
           sudo podman build --pull=always
           --tag localhost/ioplane/diskforge-dev:1.26.5
-          --file Containerfile.dev .
+          --file deployments/containers/development.Containerfile .
 
       - name: Build release image
         run: >-
           sudo podman build --pull=always
           --tag localhost/ioplane/diskforge-release:2.17.1
-          --file Containerfile.release .
+          --file deployments/containers/release.Containerfile .
 
       - name: Validate Compose model
         run: sudo podman compose config --quiet

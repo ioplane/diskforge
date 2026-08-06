@@ -67,8 +67,8 @@ not generate a second changelog.
 │   ├── development.md             container-only contributor workflow
 │   ├── release.md                 verification and release operations
 │   └── safety-model.md            threat model and destructive guarantees
+├── deployments/containers/        pinned development and release OCI images
 ├── integration_test.go            isolated loop-backed write acceptance
-├── Containerfile.dev              pinned development and verification image
 ├── compose.yaml                   canonical Compose development interface
 ├── go.mod                         github.com/ioplane/diskforge
 └── diskforge.go                   stable public facade and domain types
@@ -218,7 +218,8 @@ may perform a destructive write against an unresolved or host-provided device.
 
 All jobs use Blacksmith Ubuntu 24.04 runners. Checkout and runner hardening are
 orchestration steps; every Go build, format, lint, analysis, fuzz, and test
-command runs in a Podman container built from `Containerfile.dev`.
+command runs in a Podman container built from
+`deployments/containers/development.Containerfile`.
 
 ```mermaid
 flowchart TB

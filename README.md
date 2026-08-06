@@ -127,7 +127,7 @@ not part of the supported workflow.
 ```console
 /opt/podman/bin/podman build --pull=never \
   --tag localhost/ioplane/diskforge-dev:1.26.5 \
-  --file Containerfile.dev .
+  --file deployments/containers/development.Containerfile .
 /opt/podman/bin/podman compose run --rm test
 /opt/podman/bin/podman compose run --rm lint
 /opt/podman/bin/podman compose run --rm integration

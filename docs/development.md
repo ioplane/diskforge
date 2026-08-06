@@ -16,8 +16,9 @@ tags:
 
 Every code-generating, formatting, dependency, analysis, test, and build tool
 runs inside `localhost/ioplane/diskforge-dev:1.26.5`, built from the pinned
-`Containerfile.dev`. Podman is the supported OCI runtime. Host-installed Go,
-Python, Node.js, linters, and release tools are outside the evidence boundary.
+`deployments/containers/development.Containerfile`. Podman is the supported OCI
+runtime. Host-installed Go, Python, Node.js, linters, and release tools are
+outside the evidence boundary.
 
 On macOS, configure a rootful Podman Desktop machine and invoke the Podman
 Desktop binary explicitly when multiple installations exist:
@@ -35,7 +36,7 @@ so parallel service creation cannot trigger duplicate image builds.
 ```console
 /opt/podman/bin/podman build --pull=never \
   --tag localhost/ioplane/diskforge-dev:1.26.5 \
-  --file Containerfile.dev .
+  --file deployments/containers/development.Containerfile .
 ```
 
 The image contains exact tool versions and pinned multi-stage base digests.

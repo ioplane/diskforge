@@ -56,7 +56,7 @@ On macOS with Podman Desktop, use its binary explicitly:
 ```console
 /opt/podman/bin/podman build --pull=never \
   --tag localhost/ioplane/diskforge-dev:1.26.5 \
-  --file Containerfile.dev .
+  --file deployments/containers/development.Containerfile .
 ```
 
 Run one-shot Compose services sequentially:

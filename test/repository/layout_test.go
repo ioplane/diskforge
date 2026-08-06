@@ -1,0 +1,56 @@
+package repository_test
+
+import (
+	"os"
+	"path/filepath"
+	"runtime"
+	"testing"
+)
+
+func TestContainerDefinitionsHaveOwnedLocation(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	for _, path := range []string{
+		"deployments/containers/development.Containerfile",
+		"deployments/containers/release.Containerfile",
+	} {
+		assertPathExists(t, root, path)
+	}
+
+	for _, path := range []string{
+		"Containerfile.dev",
+		"Containerfile.release",
+	} {
+		assertPathAbsent(t, root, path)
+	}
+}
+
+func repositoryRoot(t *testing.T) string {
+	t.Helper()
+
+	_, source, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("runtime.Caller() did not return the layout test path")
+	}
+
+	return filepath.Clean(filepath.Join(filepath.Dir(source), "..", ".."))
+}
+
+func assertPathExists(t *testing.T, root, path string) {
+	t.Helper()
+
+	if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(path))); err != nil {
+		t.Errorf("required repository path %q: %v", path, err)
+	}
+}
+
+func assertPathAbsent(t *testing.T, root, path string) {
+	t.Helper()
+
+	if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(path))); err == nil {
+		t.Errorf("obsolete repository path %q still exists", path)
+	} else if !os.IsNotExist(err) {
+		t.Errorf("inspect obsolete repository path %q: %v", path, err)
+	}
+}
