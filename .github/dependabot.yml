@@ -25,6 +25,12 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: build(deps-dev)
+    ignore:
+      - dependency-name: library/python
+        versions:
+          - "*a*"
+          - "*b*"
+          - "*rc*"
   - package-ecosystem: github-actions
     directory: /
     schedule:
