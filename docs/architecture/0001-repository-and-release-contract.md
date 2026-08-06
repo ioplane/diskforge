@@ -1,6 +1,6 @@
 ---
 title: Diskforge Repository and Release Contract
-status: proposed
+status: accepted
 date: 2026-08-06
 owners:
   - ioplane/diskforge-maintainers
@@ -67,7 +67,7 @@ not generate a second changelog.
 │   ├── development.md             container-only contributor workflow
 │   ├── release.md                 verification and release operations
 │   └── safety-model.md            threat model and destructive guarantees
-├── test/integration/              isolated loop-backed write acceptance
+├── integration_test.go            isolated loop-backed write acceptance
 ├── Containerfile.dev              pinned development and verification image
 ├── compose.yaml                   canonical Compose development interface
 ├── go.mod                         github.com/ioplane/diskforge
@@ -101,7 +101,7 @@ func (engine *Engine) Inspect(
 ) (Inspection, error)
 func (engine *Engine) Stage(
     context.Context, StageRequest,
-) (StagedImage, error)
+) (*StagedImage, error)
 func (engine *Engine) Write(
     context.Context, WriteRequest,
 ) (WriteResult, error)
@@ -160,7 +160,7 @@ but never requests confirmation or opens the target.
 ## 7. Container-only engineering contract
 
 The development image uses
-`docker.io/library/golang:1.26.5-trixie@sha256:c05f28d5148bc5c4b60ab5c002291e830b7e835922d23875152b3af5951cecea`
+`docker.io/library/golang:1.26.5-trixie@sha256:87ffdb09b6a2e29ff910748b745395e8a0299aa80b7c0551cdca9b55e3fd2b3e`
 for Linux AMD64. The tag and digest change together after upstream verification.
 
 The initial verified toolchain is:
@@ -190,11 +190,11 @@ of the interface.
 
 ## 8. Static analysis and testing
 
-golangci-lint v2 uses `default: none` plus an explicit strict policy. It enables
-security, correctness, error, context, resource-lifetime, complexity,
-performance, documentation, formatting, and test linters. Issue caps are zero;
-`nolint` directives require a specific linter and an explanation. Exclusions
-are narrow, path-scoped, and documented.
+golangci-lint v2 uses `default: all` with documented exclusions for conflicting,
+deprecated, or inapplicable rules. It enables security, correctness, error,
+context, resource-lifetime, complexity, performance, documentation, formatting,
+and test linters. Issue caps are zero; `nolint` directives require a specific
+linter and an explanation. Exclusions are narrow, path-scoped, and documented.
 
 Independent gates include:
 
@@ -246,18 +246,16 @@ Release Please `17.11.1` with release-please-action `5.0.0` runs on pushes to
 updates `CHANGELOG.md` and `.release-please-manifest.json`. Merging it creates a
 `vMAJOR.MINOR.PATCH` tag and the corresponding GitHub Release.
 
-The action uses the ephemeral `GITHUB_TOKEN` with only `contents: write` and
-`pull-requests: write`. Because events created by that token do not trigger new
-workflow runs, the release-please workflow passes its `release_created` and
-`tag_name` outputs to the reusable release workflow in the same run. This
-avoids a long-lived personal access token. The reusable release workflow also
-listens for independently pushed `v*.*.*` tags.
+The action uses a repository-scoped `RELEASE_PLEASE_TOKEN` with only the access
+needed to maintain the release pull request and publish the release. A token
+distinct from the ephemeral `GITHUB_TOKEN` is required so the published release
+emits the downstream workflow event.
 
-The release workflow listens to tags matching `v*.*.*`, verifies that the tag
-is valid SemVer and points to `main`, rebuilds all gates inside Podman, then
-runs GoReleaser inside the pinned release container. GoReleaser uses release
-mode `append`, disables its own changelog generation, and attaches artifacts to
-the Release created by Release Please.
+The release workflow listens once for the published GitHub Release, verifies
+that its tag is stable SemVer and points to `main`, rebuilds all gates inside
+Podman, then runs GoReleaser inside the pinned release container. GoReleaser
+uses release mode `append`, disables its own changelog generation, and attaches
+artifacts to the Release created by Release Please.
 
 The first public release is `v0.1.0`. Before 1.0, breaking changes bump the
 minor version and features bump the minor version. A stable `v1.0.0` requires a
@@ -313,8 +311,8 @@ Dependabot configuration, repository settings documentation, release-note
 labels, and workflows for CI, release management, release publication,
 security, Scorecard, and stale issue handling.
 
-README badges cover CI, release, Go reference, coverage, security, Scorecard,
-Go version, and Apache-2.0. README and architecture documentation include
+README badges cover CI, release, Go reference, Scorecard, Go version, and
+Apache-2.0. README and architecture documentation include
 Mermaid diagrams for safety flow, component boundaries, and the release path.
 
 Only product source, tests, governance, documentation, and reproducible build

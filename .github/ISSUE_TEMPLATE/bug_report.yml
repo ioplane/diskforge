@@ -1,0 +1,68 @@
+---
+name: Bug report
+description: Report reproducible incorrect or unsafe behavior.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Do not include secrets, confirmation tokens, private image URLs, or
+        production device identities. Report vulnerabilities privately.
+  - type: input
+    id: version
+    attributes:
+      label: Diskforge version
+      description: Paste redacted output from diskforge version --json.
+    validations:
+      required: true
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      options:
+        - rescue
+        - live
+        - stage only
+        - Go API only
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: >-
+        Linux distribution, kernel, architecture, and block-device type.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: >-
+        Provide minimal steps using a disposable loop-backed target when
+        possible.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and structured error
+    validations:
+      required: true
+  - type: checkboxes
+    id: safety
+    attributes:
+      label: Safety confirmation
+      options:
+        - label: I removed secrets and production device identities.
+          required: true
+        - label: This report is not an undisclosed vulnerability.
+          required: true
