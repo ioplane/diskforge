@@ -30,7 +30,8 @@ This file documents settings that cannot be enforced from the source tree.
 - Allow GitHub-authored, verified-creator, and explicitly approved actions only.
 - Require actions to be pinned to full commit SHAs.
 - Default workflow token permission: read repository contents.
-- Allow Actions to create and approve pull requests only for Release Please.
+- Keep the default workflow token read-only and prevent it from approving pull
+  requests; Release Please uses its dedicated repository secret.
 - Enable Dependabot alerts and security updates, secret scanning, push
   protection, dependency graph, and code scanning.
 - Register `RELEASE_PLEASE_TOKEN` only if release event propagation cannot use
