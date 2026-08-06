@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Release Please maintains this file from Conventional Commits. Contributors do
 not edit release sections manually.
 
+## [0.1.1](https://github.com/ioplane/diskforge/compare/v0.1.0...v0.1.1) (2026-08-06)
+
+
+### Bug fixes
+
+* **release:** mount Git metadata for publishing ([#9](https://github.com/ioplane/diskforge/issues/9)) ([4bb94bf](https://github.com/ioplane/diskforge/commit/4bb94bfadd16aa5435e78d08e4dab6ec2422f0a5))
+
 ## 0.1.0 (2026-08-06)
 
 
