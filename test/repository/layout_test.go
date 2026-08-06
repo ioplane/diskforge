@@ -70,6 +70,26 @@ func TestToolConfigurationHasOwnedLocation(t *testing.T) {
 	}
 }
 
+func TestReleaseStateAndArtifactsHaveOwnedLocation(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	for _, path := range []string{
+		".config/release-please/config.json",
+		".config/release-please/manifest.json",
+	} {
+		assertPathExists(t, root, path)
+	}
+
+	for _, path := range []string{
+		".release-please-manifest.json",
+		"release-please-config.json",
+		"dist",
+	} {
+		assertPathAbsent(t, root, path)
+	}
+}
+
 func repositoryRoot(t *testing.T) string {
 	t.Helper()
 

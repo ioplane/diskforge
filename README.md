@@ -133,6 +133,9 @@ not part of the supported workflow.
 /opt/podman/bin/podman compose run --rm integration
 ```
 
+`release-snapshot` writes generated verification artifacts only below the
+ignored `.artifacts/release` tree.
+
 The integration service is privileged but can write only to the temporary
 loop-backed file it creates. Run services sequentially on memory-constrained
 Podman machines. See [development](docs/development.md) for every verification

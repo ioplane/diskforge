@@ -245,8 +245,8 @@ write-capable tokens.
 
 Release Please `17.11.1` with release-please-action `5.0.0` runs on pushes to
 `main`. It maintains a release pull request from Conventional Commits. That PR
-updates `CHANGELOG.md` and `.release-please-manifest.json`. Merging it creates a
-`vMAJOR.MINOR.PATCH` tag and the corresponding GitHub Release.
+updates `CHANGELOG.md` and `.config/release-please/manifest.json`. Merging it
+creates a `vMAJOR.MINOR.PATCH` tag and the corresponding GitHub Release.
 
 The action uses a repository-scoped `RELEASE_PLEASE_TOKEN` with only the access
 needed to maintain the release pull request and publish the release. A token

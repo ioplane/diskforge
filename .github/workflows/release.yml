@@ -105,6 +105,6 @@ jobs:
         uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
         with:
           subject-path: |
-            dist/*.tar.gz
-            dist/*_checksums.txt
-            dist/*.spdx.json
+            .artifacts/release/*.tar.gz
+            .artifacts/release/*_checksums.txt
+            .artifacts/release/*.spdx.json

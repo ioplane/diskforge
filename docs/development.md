@@ -88,12 +88,14 @@ Independent analyzers can use the same read-only service image:
 ## Static release build
 
 Release configuration builds with `CGO_ENABLED=0`, `-trimpath`, and deterministic
-linker flags. A local verification build writes only to ignored `dist/`:
+linker flags. A local verification build writes only to the ignored
+`.artifacts/release/` tree:
 
 ```console
 /opt/podman/bin/podman run --rm --network=none \
   --env CGO_ENABLED=0 --env GOOS=linux --env GOARCH=amd64 \
-  --volume "$PWD:/workspace:ro" --volume "$PWD/dist:/out:rw" \
+  --volume "$PWD:/workspace:ro" \
+  --volume "$PWD/.artifacts/release:/out:rw" \
   --workdir /workspace localhost/ioplane/diskforge-dev:1.26.5 \
   go build -trimpath -ldflags='-s -w -buildid=' \
   -o /out/diskforge ./cmd/diskforge
