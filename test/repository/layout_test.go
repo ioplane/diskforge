@@ -54,6 +54,76 @@ func TestDependabotTracksContainerDefinitions(t *testing.T) {
 	}
 }
 
+func TestWorkflowJobsUseRightSizedBlacksmithRunners(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	workflowDirectory := filepath.Join(root, ".github", "workflows")
+	policies := map[string]string{
+		"ci.yml":             "blacksmith-4vcpu-ubuntu-2404",
+		"release-please.yml": "blacksmith-2vcpu-ubuntu-2404",
+		"release.yml":        "blacksmith-4vcpu-ubuntu-2404",
+		"scorecard.yml":      "blacksmith-2vcpu-ubuntu-2404",
+		"security.yml":       "blacksmith-2vcpu-ubuntu-2404",
+	}
+
+	entries, err := os.ReadDir(workflowDirectory)
+	if err != nil {
+		t.Fatalf("read workflow directory: %v", err)
+	}
+
+	seen := make(map[string]struct{}, len(policies))
+	for _, entry := range entries {
+		name := entry.Name()
+		if entry.IsDir() || (filepath.Ext(name) != ".yml" && filepath.Ext(name) != ".yaml") {
+			continue
+		}
+
+		want, ok := policies[name]
+		if !ok {
+			t.Errorf("workflow %q has no Blacksmith runner policy", name)
+			continue
+		}
+		seen[name] = struct{}{}
+
+		content, readErr := os.ReadFile(filepath.Join(workflowDirectory, name))
+		if readErr != nil {
+			t.Errorf("read workflow %q: %v", name, readErr)
+			continue
+		}
+
+		labels := workflowRunnerLabels(string(content))
+		if len(labels) == 0 {
+			t.Errorf("workflow %q has no literal runs-on label", name)
+			continue
+		}
+		for _, got := range labels {
+			if got != want {
+				t.Errorf("workflow %q runs on %q, want %q", name, got, want)
+			}
+		}
+	}
+
+	for name := range policies {
+		if _, ok := seen[name]; !ok {
+			t.Errorf("runner policy references missing workflow %q", name)
+		}
+	}
+}
+
+func workflowRunnerLabels(content string) []string {
+	var labels []string
+	for line := range strings.SplitSeq(content, "\n") {
+		value, ok := strings.CutPrefix(strings.TrimSpace(line), "runs-on:")
+		if !ok {
+			continue
+		}
+		labels = append(labels, strings.Trim(strings.TrimSpace(value), "\"'"))
+	}
+
+	return labels
+}
+
 func TestReleaseArchivePreservesSecurityDocumentPath(t *testing.T) {
 	t.Parallel()
 
