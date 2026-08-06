@@ -9,4 +9,5 @@ config:
     front_matter_title: ""
 
 ignores:
+  - .git/**
   - CHANGELOG.md

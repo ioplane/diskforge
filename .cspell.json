@@ -1,6 +1,7 @@
 {
   "version": "0.2",
   "useGitignore": true,
+  "ignorePaths": [".git/**"],
   "words": [
     "BLKFLSBUF",
     "bootable",
@@ -60,6 +61,7 @@
     "Sigstore",
     "Staticcheck",
     "superblocks",
+    "swapfile",
     "swapoff",
     "Swapoff",
     "SWAPOFF",
