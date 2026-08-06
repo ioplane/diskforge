@@ -55,6 +55,7 @@ RUN apt-get update \
       ca-certificates \
       e2fsprogs \
       fdisk \
+      file \
       gcc \
       git \
       libc6-dev \
