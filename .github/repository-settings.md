@@ -6,22 +6,23 @@ This file documents settings that cannot be enforced from the source tree.
 
 - Visibility: public
 - Default branch: `main`
-- Issues, Discussions, Projects, and private vulnerability reporting: enabled
-- Wiki: disabled
+- Issues, Discussions, and private vulnerability reporting: enabled
+- Projects and Wiki: disabled
 - Merge method: squash only
 - Automatically delete head branches: enabled
 - Web commit signoff: enabled
 
-## Ruleset for `main`
+## Branch protection for `main`
 
-- Require pull requests with one approving review.
-- Dismiss stale approvals and require CODEOWNERS review.
+- Require changes from non-administrators to satisfy protected-branch checks.
+- Do not require approving reviews while the project has a single maintainer.
 - Require conversation resolution.
-- Require signed commits and linear history.
+- Require linear history.
 - Require branches to be up to date.
-- Require `CI / required`, `Security / Dependency review`, and
-  `OpenSSF Scorecard / Analyze supply chain` checks.
-- Block force pushes, deletions, and bypasses.
+- Require the `required` and `Dependency review` checks from GitHub Actions.
+- Block force pushes and deletions.
+- Permit administrator bypass for repository recovery and automated release
+  maintenance.
 - Restrict tag creation for `v*` to repository administrators and automation.
 
 ## Actions and security
