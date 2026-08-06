@@ -20,11 +20,30 @@ x-verification-service: &verification-service
   volumes:
     - .:/workspace:ro
 
+x-release-service: &release-service
+  image: localhost/ioplane/diskforge-release:2.17.1
+  working_dir: /workspace
+  read_only: true
+  security_opt:
+    - no-new-privileges=true
+  environment:
+    CGO_ENABLED: "0"
+    GIT_DIR: ${DISKFORGE_GIT_DIR:-/git-common}
+    GIT_WORK_TREE: /workspace
+    GOTOOLCHAIN: local
+    HOME: /tmp/home
+  tmpfs:
+    - /tmp:rw,nosuid,nodev,size=2g
+  volumes:
+    - .:/workspace:ro
+    - ${DISKFORGE_GIT_COMMON_DIR:-.git}:/git-common:ro
+
 services:
   format:
     <<: *verification-service
     volumes:
       - .:/workspace:rw
+      - ${DISKFORGE_GIT_COMMON_DIR:-.git}:/git-common:ro
     command: ["gofumpt", "-w", "."]
 
   lint:
@@ -59,6 +78,10 @@ services:
       - "{}"
       - "+"
 
+  modcheck:
+    <<: *verification-service
+    command: ["go", "mod", "tidy", "-diff"]
+
   test:
     <<: *verification-service
     command: ["gotestsum", "--", "-count=1", "./..."]
@@ -85,6 +108,34 @@ services:
     network_mode: bridge
     command: ["govulncheck", "./..."]
 
+  staticcheck:
+    <<: *verification-service
+    command: ["staticcheck", "./..."]
+
+  gosec:
+    <<: *verification-service
+    command: ["gosec", "-quiet", "./..."]
+
+  deadcode:
+    <<: *verification-service
+    command: ["deadcode", "-test", "./..."]
+
+  build:
+    <<: *verification-service
+    environment:
+      <<: *verification-environment
+      CGO_ENABLED: "0"
+      GOARCH: amd64
+      GOOS: linux
+    command:
+      - go
+      - build
+      - -trimpath
+      - -ldflags=-s -w -buildid=
+      - -o
+      - /tmp/diskforge
+      - ./cmd/diskforge
+
   docs:
     <<: *verification-service
     command:
@@ -95,8 +146,48 @@ services:
         cspell "**/*.{go,md,yaml,yml}" &&
         yamllint --strict .
 
+  actions:
+    <<: *verification-service
+    command: ["actionlint", "-config-file", ".github/actionlint.yaml"]
+
   integration:
     <<: *verification-service
     privileged: true
     security_opt: []
     command: ["gotestsum", "--", "-tags=integration", "-count=1", "./..."]
+
+  release-check:
+    <<: *release-service
+    network_mode: none
+    command: ["goreleaser", "check"]
+
+  release-snapshot:
+    <<: *release-service
+    read_only: false
+    network_mode: bridge
+    volumes:
+      - .:/workspace:rw
+      - ${DISKFORGE_GIT_COMMON_DIR:-.git}:/git-common:ro
+    command:
+      - goreleaser
+      - release
+      - --snapshot
+      - --clean
+      - --skip=sign,publish
+
+  release:
+    <<: *release-service
+    read_only: false
+    network_mode: bridge
+    environment:
+      CGO_ENABLED: "0"
+      GIT_DIR: ${DISKFORGE_GIT_DIR:-/git-common}
+      GIT_WORK_TREE: /workspace
+      GOTOOLCHAIN: local
+      HOME: /tmp/home
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      ACTIONS_ID_TOKEN_REQUEST_URL: ${ACTIONS_ID_TOKEN_REQUEST_URL:-}
+      ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}
+    volumes:
+      - .:/workspace:rw
+    command: ["goreleaser", "release", "--clean"]

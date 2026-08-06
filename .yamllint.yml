@@ -3,8 +3,11 @@ extends: default
 
 ignore: |
   .beads/
+  dist/
 
 rules:
+  comments:
+    min-spaces-from-content: 1
   line-length:
     level: error
-    max: 80
+    max: 120

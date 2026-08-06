@@ -267,7 +267,7 @@ Release assets are:
 - `diskforge_<version>_linux_amd64.tar.gz`;
 - `diskforge_<version>_checksums.txt`;
 - SPDX JSON SBOM documents;
-- a keyless Sigstore signature and certificate for the checksum file;
+- a keyless Cosign v3 Sigstore bundle for the checksum file;
 - GitHub build provenance attestation;
 - a source archive produced by GoReleaser.
 

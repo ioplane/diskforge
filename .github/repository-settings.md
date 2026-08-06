@@ -19,7 +19,8 @@ This file documents settings that cannot be enforced from the source tree.
 - Require conversation resolution.
 - Require signed commits and linear history.
 - Require branches to be up to date.
-- Require `CI / required`, `CodeQL`, and `OpenSSF Scorecard` checks.
+- Require `CI / required`, `Security / Dependency review`, and
+  `OpenSSF Scorecard / Analyze supply chain` checks.
 - Block force pushes, deletions, and bypasses.
 - Restrict tag creation for `v*` to repository administrators and automation.
 

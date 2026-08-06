@@ -1,0 +1,44 @@
+---
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+      - duplicate
+      - invalid
+      - question
+    authors:
+      - dependabot
+      - dependabot[bot]
+      - github-actions[bot]
+  categories:
+    - title: Security
+      labels:
+        - security
+    - title: Breaking changes
+      labels:
+        - breaking-change
+    - title: Safety policy
+      labels:
+        - area/policy
+        - area/linux
+    - title: Image acquisition and streaming
+      labels:
+        - area/image
+    - title: API and CLI
+      labels:
+        - area/api
+        - area/cli
+    - title: Tests and evidence
+      labels:
+        - area/tests
+    - title: Documentation
+      labels:
+        - documentation
+    - title: Build, CI, and supply chain
+      labels:
+        - build
+        - ci
+        - dependencies
+    - title: Other changes
+      labels:
+        - "*"

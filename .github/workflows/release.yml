@@ -1,0 +1,110 @@
+---
+name: Release
+
+# yamllint disable-line rule:truthy
+on:
+  release:
+    types:
+      - published
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Build and verify a snapshot without publishing
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build, sign, and publish
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    permissions:
+      attestations: write
+      contents: write
+      id-token: write
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
+      - name: Check out release tag
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Report Podman runtime
+        run: sudo podman version
+
+      - name: Build development image
+        run: >-
+          sudo podman build --pull=always
+          --tag localhost/ioplane/diskforge-dev:1.26.5
+          --file Containerfile.dev .
+
+      - name: Build release image
+        run: >-
+          sudo podman build --pull=always
+          --tag localhost/ioplane/diskforge-release:2.17.1
+          --file Containerfile.release .
+
+      - name: Verify release tree
+        run: sudo podman compose run --rm modcheck
+
+      - name: Lint release tree
+        run: sudo podman compose run --rm lint-integration
+
+      - name: Test release tree
+        run: sudo podman compose run --rm test
+
+      - name: Run race detector
+        run: sudo podman compose run --rm race
+
+      - name: Run Staticcheck
+        run: sudo podman compose run --rm staticcheck
+
+      - name: Run gosec
+        run: sudo podman compose run --rm gosec
+
+      - name: Reject dead code
+        run: sudo podman compose run --rm deadcode
+
+      - name: Scan known vulnerabilities
+        run: sudo podman compose run --rm vuln
+
+      - name: Validate documentation
+        run: sudo podman compose run --rm docs
+
+      - name: Validate workflows
+        run: sudo podman compose run --rm actions
+
+      - name: Run isolated loop-device integration
+        run: sudo podman compose run --rm integration
+
+      - name: Validate release configuration
+        run: sudo podman compose run --rm release-check
+
+      - name: Build release snapshot
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        run: sudo podman compose run --rm release-snapshot
+
+      - name: Publish with GoReleaser
+        if: ${{ github.event_name == 'release' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: sudo --preserve-env podman compose run --rm release
+
+      - name: Attest release artifacts
+        if: ${{ github.event_name == 'release' }}
+        uses: actions/attest-build-provenance@0f67c3f4856b2e3261c31976d6725780e5e4c373 # v4.1.1
+        with:
+          subject-path: |
+            dist/*.tar.gz
+            dist/*_checksums.txt
+            dist/*.spdx.json

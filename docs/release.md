@@ -69,13 +69,13 @@ gh attestation verify "diskforge_${VERSION}_linux_amd64.tar.gz" \
   --repo ioplane/diskforge
 ```
 
-Verify the keyless signature over the checksum file with the certificate and
-workflow identity published by the release:
+Download the Cosign v3 bundle and verify the keyless signature over the
+checksum file with the workflow identity published by the release:
 
 ```console
+curl -fsSLO "${BASE}/diskforge_${VERSION}_checksums.txt.sigstore.json"
 cosign verify-blob \
-  --certificate "diskforge_${VERSION}_checksums.txt.pem" \
-  --signature "diskforge_${VERSION}_checksums.txt.sig" \
+  --bundle "diskforge_${VERSION}_checksums.txt.sigstore.json" \
   --certificate-identity-regexp \
   '^https://github\.com/ioplane/diskforge/.github/workflows/release.yml@refs/tags/v' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com \

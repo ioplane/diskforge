@@ -1,0 +1,111 @@
+---
+name: CI
+
+# yamllint disable-line rule:truthy
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch: {}
+
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  required:
+    name: required
+    runs-on: blacksmith-4vcpu-ubuntu-2404
+    permissions:
+      contents: read
+    steps:
+      - name: Harden runner
+        uses: step-security/harden-runner@b09bb98e06d4d774595224525879c09bc6e98c40 # v2.20.1
+        with:
+          egress-policy: audit
+
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Report Podman runtime
+        run: sudo podman version
+
+      - name: Build development image
+        run: >-
+          sudo podman build --pull=always
+          --tag localhost/ioplane/diskforge-dev:1.26.5
+          --file Containerfile.dev .
+
+      - name: Build release image
+        run: >-
+          sudo podman build --pull=always
+          --tag localhost/ioplane/diskforge-release:2.17.1
+          --file Containerfile.release .
+
+      - name: Validate Compose model
+        run: sudo podman compose config --quiet
+
+      - name: Verify formatting
+        run: sudo podman compose run --rm format
+
+      - name: Reject formatting drift
+        run: git diff --exit-code
+
+      - name: Verify module graph
+        run: sudo podman compose run --rm modcheck
+
+      - name: Run strict linters
+        run: sudo podman compose run --rm lint
+
+      - name: Lint integration build
+        run: sudo podman compose run --rm lint-integration
+
+      - name: Run language-server diagnostics
+        run: sudo podman compose run --rm gopls
+
+      - name: Run unit tests
+        run: sudo podman compose run --rm test
+
+      - name: Run race detector
+        run: sudo podman compose run --rm race
+
+      - name: Run fuzz smoke test
+        run: sudo podman compose run --rm fuzz
+
+      - name: Run Staticcheck
+        run: sudo podman compose run --rm staticcheck
+
+      - name: Run gosec
+        run: sudo podman compose run --rm gosec
+
+      - name: Reject dead code
+        run: sudo podman compose run --rm deadcode
+
+      - name: Scan known vulnerabilities
+        run: sudo podman compose run --rm vuln
+
+      - name: Validate documentation and workflows
+        run: sudo podman compose run --rm docs
+
+      - name: Validate GitHub Actions syntax
+        run: sudo podman compose run --rm actions
+
+      - name: Build static Linux AMD64 binary
+        run: sudo podman compose run --rm build
+
+      - name: Run isolated loop-device integration
+        run: sudo podman compose run --rm integration
+
+      - name: Validate GoReleaser configuration
+        run: sudo podman compose run --rm release-check
+
+      - name: Build release snapshot
+        run: sudo podman compose run --rm release-snapshot

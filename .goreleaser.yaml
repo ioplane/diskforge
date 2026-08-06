@@ -1,0 +1,106 @@
+---
+version: 2
+
+project_name: diskforge
+
+before:
+  hooks:
+    - go mod download
+    - go mod verify
+
+env:
+  - CGO_ENABLED=0
+  - GOTOOLCHAIN=local
+
+builds:
+  - id: diskforge
+    main: ./cmd/diskforge
+    binary: diskforge
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - >-
+        -s -w -buildid=
+        -X github.com/ioplane/diskforge/internal/version.version={{ .Version }}
+        -X github.com/ioplane/diskforge/internal/version.commit={{ .FullCommit }}
+        -X github.com/ioplane/diskforge/internal/version.buildDate={{ .CommitDate }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos:
+      - linux
+    goarch:
+      - amd64
+
+archives:
+  - id: diskforge
+    ids:
+      - diskforge
+    formats:
+      - tar.gz
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    files:
+      - LICENSE
+      - NOTICE
+      - README.md
+      - CHANGELOG.md
+      - SECURITY.md
+      - src: docs/release.md
+        dst: docs/release.md
+
+checksum:
+  name_template: "{{ .ProjectName }}_{{ .Version }}_checksums.txt"
+  algorithm: sha256
+
+sboms:
+  - id: archive
+    artifacts: archive
+    documents:
+      - "{{ .ArtifactName }}.spdx.json"
+    args:
+      - "$artifact"
+      - --output
+      - spdx-json=$document
+  - id: source
+    artifacts: source
+    documents:
+      - "{{ .ProjectName }}_{{ .Version }}_source.spdx.json"
+    args:
+      - "$artifact"
+      - --output
+      - spdx-json=$document
+
+signs:
+  - id: checksum
+    cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sigstore.json"
+    output: true
+    args:
+      - sign-blob
+      - "--bundle=${signature}"
+      - "${artifact}"
+      - --yes
+
+source:
+  enabled: true
+  name_template: "{{ .ProjectName }}_{{ .Version }}_source"
+
+changelog:
+  disable: true
+
+release:
+  github:
+    owner: ioplane
+    name: diskforge
+  draft: false
+  prerelease: auto
+  mode: append
+  replace_existing_artifacts: false
+  name_template: "v{{ .Version }}"
+  footer: |
+    ## Verifying this release
+
+    Verify checksums, the Cosign v3 bundle, and GitHub build provenance before
+    granting the binary root privileges. See `docs/release.md` in the archive.
