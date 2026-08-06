@@ -19,6 +19,7 @@ const (
 	sectorBytes     int64 = 512
 	kilobyteBytes   int64 = 1024
 	mountFieldCount       = 6
+	swapFieldCount        = 2
 )
 
 var (
@@ -38,6 +39,11 @@ type mountRecord struct {
 	mountpoint string
 	filesystem string
 	readOnly   bool
+}
+
+type swapRecord struct {
+	source string
+	kind   string
 }
 
 func (observer Observer) blockRoot() string {
@@ -389,17 +395,16 @@ func (observer Observer) MountedDevices() (map[string]bool, error) {
 	return result, nil
 }
 
-// SwapDevices returns active swap device names plus backing dependencies.
-func (observer Observer) SwapDevices() (map[string]bool, error) {
-	path := filepath.Join(observer.ProcRoot, "swaps")
-	// #nosec G304 -- procfs root is an explicit Observer dependency.
+func readSwapRecords(procRoot string) ([]swapRecord, error) {
+	path := filepath.Join(procRoot, "swaps")
+	// #nosec G304 -- procfs root is an explicit observer dependency.
 	file, err := os.Open(path)
 	if err != nil {
 		return nil, fmt.Errorf("open swaps: %w", err)
 	}
 	defer file.Close()
 
-	result := map[string]bool{}
+	records := []swapRecord{}
 	scanner := bufio.NewScanner(file)
 	first := true
 	for scanner.Scan() {
@@ -408,14 +413,57 @@ func (observer Observer) SwapDevices() (map[string]bool, error) {
 			continue
 		}
 		fields := strings.Fields(scanner.Text())
-		if len(fields) > 0 {
-			if err := observer.expand(result, filepath.Base(fields[0])); err != nil {
-				return nil, err
-			}
+		if len(fields) < swapFieldCount {
+			return nil, fmt.Errorf("%w: swaps line %q", ErrInvalidProcfs, scanner.Text())
 		}
+		records = append(records, swapRecord{
+			source: unescapeMount(fields[0]),
+			kind:   fields[1],
+		})
 	}
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("scan swaps: %w", err)
+	}
+
+	return records, nil
+}
+
+// SwapDevices returns active swap device names plus backing dependencies.
+// File-backed swap is resolved through the filesystem that contains the file.
+func (observer Observer) SwapDevices() (map[string]bool, error) {
+	records, err := readSwapRecords(observer.ProcRoot)
+	if err != nil {
+		return nil, err
+	}
+	result := map[string]bool{}
+	for _, record := range records {
+		switch record.kind {
+		case "partition":
+			if err := observer.expand(result, filepath.Base(record.source)); err != nil {
+				return nil, err
+			}
+		case "file":
+			_, backing, err := observer.Source(record.source)
+			if err != nil {
+				return nil, fmt.Errorf("resolve swap file %q: %w", record.source, err)
+			}
+			if len(backing) == 0 {
+				return nil, fmt.Errorf(
+					"%w: block backing for swap file %q cannot be proven",
+					ErrUnresolvedDevice,
+					record.source,
+				)
+			}
+			for _, name := range backing {
+				result[name] = true
+			}
+		default:
+			return nil, fmt.Errorf(
+				"%w: unsupported swap type %q",
+				ErrInvalidProcfs,
+				record.kind,
+			)
+		}
 	}
 
 	return result, nil

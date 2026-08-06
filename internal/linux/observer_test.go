@@ -1,6 +1,7 @@
 package linux
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -136,6 +137,72 @@ func TestObserverReadsHostSafetyState(t *testing.T) {
 	available, err := observer.SysRqTriggerAvailable()
 	if err != nil || !available {
 		t.Fatalf("SysRqTriggerAvailable() = %t, %v", available, err)
+	}
+}
+
+func TestObserverResolvesFileBackedSwapThroughItsMount(t *testing.T) {
+	t.Parallel()
+
+	observer := linuxFixture(t)
+	swapsPath := filepath.Join(observer.ProcRoot, "swaps")
+	swaps := "Filename Type Size Used Priority\n/swapfile file 1048572 0 -2\n"
+	// #nosec G703 -- swapsPath is an exact path inside t.TempDir().
+	if err := os.WriteFile(swapsPath, []byte(swaps), 0o600); err != nil {
+		t.Fatalf("write file-backed swap fixture: %v", err)
+	}
+
+	devices, err := observer.SwapDevices()
+	if err != nil {
+		t.Fatalf("SwapDevices() error = %v", err)
+	}
+	want := map[string]bool{"dm-0": true, "dm-1": true, "vda": true, "vda2": true}
+	if !reflect.DeepEqual(devices, want) {
+		t.Fatalf("SwapDevices() = %#v, want %#v", devices, want)
+	}
+}
+
+func TestObserverRejectsFileBackedSwapWithoutProvenBlockBacking(t *testing.T) {
+	t.Parallel()
+
+	observer := linuxFixture(t)
+	mountinfoPath := filepath.Join(observer.ProcRoot, "self", "mountinfo")
+	//nolint:dupword // Mountinfo requires adjacent filesystem type and source fields.
+	mountinfo := "29 23 0:42 / / rw,relatime - overlay overlay rw\n"
+	// #nosec G703 -- mountinfoPath is an exact path inside t.TempDir().
+	if err := os.WriteFile(mountinfoPath, []byte(mountinfo), 0o600); err != nil {
+		t.Fatalf("write overlay mount fixture: %v", err)
+	}
+	swapsPath := filepath.Join(observer.ProcRoot, "swaps")
+	swaps := "Filename Type Size Used Priority\n/swapfile file 1048572 0 -2\n"
+	// #nosec G703 -- swapsPath is an exact path inside t.TempDir().
+	if err := os.WriteFile(swapsPath, []byte(swaps), 0o600); err != nil {
+		t.Fatalf("write file-backed swap fixture: %v", err)
+	}
+
+	_, err := observer.SwapDevices()
+	if !errors.Is(err, ErrUnresolvedDevice) {
+		t.Fatalf("SwapDevices() error = %v, want %v", err, ErrUnresolvedDevice)
+	}
+}
+
+func TestReadSwapRecordsDecodesProcfsEscapes(t *testing.T) {
+	t.Parallel()
+
+	observer := linuxFixture(t)
+	swapsPath := filepath.Join(observer.ProcRoot, "swaps")
+	swaps := "Filename Type Size Used Priority\n/swap\\040file file 1048572 0 -2\n"
+	// #nosec G703 -- swapsPath is an exact path inside t.TempDir().
+	if err := os.WriteFile(swapsPath, []byte(swaps), 0o600); err != nil {
+		t.Fatalf("write escaped swap fixture: %v", err)
+	}
+
+	records, err := readSwapRecords(observer.ProcRoot)
+	if err != nil {
+		t.Fatalf("readSwapRecords() error = %v", err)
+	}
+	want := []swapRecord{{source: "/swap file", kind: "file"}}
+	if !reflect.DeepEqual(records, want) {
+		t.Fatalf("readSwapRecords() = %#v, want %#v", records, want)
 	}
 }
 
