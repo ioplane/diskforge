@@ -163,6 +163,14 @@ from its contents.
   display text.
 - Logs and JSON MAY include a token, but filenames MUST NOT be derived from it.
 
+The current format begins with `confirm-v1-`, followed by a validated device
+label, a short image-digest fragment, and a bound identity-digest fragment.
+For example:
+
+```text
+confirm-v1-vda-0123456789ab-ca99718141349949
+```
+
 The safety contract, including every target and image identity field bound to
 the digest, is defined by the public API and policy tests.
 

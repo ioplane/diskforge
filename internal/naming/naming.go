@@ -16,10 +16,10 @@ func ArtifactName(version, goos, goarch, extension string) (string, error) {
 	if !ValidSemverTag(version) {
 		return "", fmt.Errorf("invalid stable release tag %q", version)
 	}
-	if !validLabel(goos) {
+	if !ValidLabel(goos) {
 		return "", fmt.Errorf("invalid operating system label %q", goos)
 	}
-	if !validLabel(goarch) {
+	if !ValidLabel(goarch) {
 		return "", fmt.Errorf("invalid architecture label %q", goarch)
 	}
 	if !validExtension(extension) {
@@ -74,7 +74,8 @@ func validNumericIdentifier(value string) bool {
 	return true
 }
 
-func validLabel(value string) bool {
+// ValidLabel reports whether value is a lowercase RFC 1123-style label.
+func ValidLabel(value string) bool {
 	if len(value) == 0 || len(value) > maxLabelLength {
 		return false
 	}

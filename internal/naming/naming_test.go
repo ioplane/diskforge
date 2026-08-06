@@ -88,3 +88,27 @@ func TestArtifactNameRejectsInvalidInput(t *testing.T) {
 		})
 	}
 }
+
+func TestValidLabel(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		value string
+		want  bool
+	}{
+		{value: "vda", want: true},
+		{value: "dm-0", want: true},
+		{value: "386", want: true},
+		{value: "dm_0", want: false},
+		{value: "VDA", want: false},
+		{value: "-vda", want: false},
+		{value: "vda-", want: false},
+		{value: "", want: false},
+	}
+
+	for _, test := range tests {
+		if got := ValidLabel(test.value); got != test.want {
+			t.Errorf("ValidLabel(%q) = %t, want %t", test.value, got, test.want)
+		}
+	}
+}
