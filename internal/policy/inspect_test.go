@@ -15,7 +15,7 @@ func validInspectionInputs() (TargetIdentity, ImageIdentity, HostObservation) {
 		Descendants:   []string{"vda", "vda1", "vda2"},
 	}
 	image := ImageIdentity{
-		Path:              "/images/polyexit.raw.zst",
+		Path:              "/images/diskforge.raw.zst",
 		SHA256:            "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
 		CompressedBytes:   2_147_483_648,
 		UncompressedBytes: 34_359_738_368,
@@ -154,7 +154,7 @@ func TestInspectAcceptsRescueAndLivePolicies(t *testing.T) {
 
 			target, image, host := validInspectionInputs()
 			if mode == ModeLive {
-				image.Path = "/dev/shm/polyexit.raw.zst"
+				image.Path = "/dev/shm/diskforge.raw.zst"
 				host.SourceFilesystem = "tmpfs"
 				host.MountedDevices["vda2"] = true
 				host.SwapDevices["vda2"] = true

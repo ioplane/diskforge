@@ -31,6 +31,16 @@ services:
     <<: *verification-service
     command: ["golangci-lint", "run", "--config", ".golangci.yml"]
 
+  lint-integration:
+    <<: *verification-service
+    command:
+      - golangci-lint
+      - run
+      - --config
+      - .golangci.yml
+      - --build-tags
+      - integration
+
   gopls:
     <<: *verification-service
     command:
