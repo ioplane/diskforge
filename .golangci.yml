@@ -12,9 +12,11 @@ linters:
     # Replaced by gomodguard_v2 and wsl_v5.
     - gomodguard
     - wsl
-    # These rules conflict with intentional zero values, error propagation,
-    # internal-package testing, and the versioned snake_case JSON contract.
+    # These rules conflict with intentional zero values, descriptor ownership
+    # interfaces, error propagation, internal tests, and snake_case JSON.
     - exhaustruct
+    - funcorder
+    - ireturn
     - nlreturn
     - noinlineerr
     - tagliatelle
@@ -34,6 +36,8 @@ linters:
       disabled-checks:
         # Safety decisions intentionally use immutable value snapshots.
         - hugeParam
+        # nonamedreturns is the repository-wide result naming rule.
+        - unnamedResult
     govet:
       enable-all: true
       disable:
@@ -47,6 +51,7 @@ linters:
             - $gostd
             - github.com/ioplane/diskforge
             - github.com/klauspost/compress
+            - golang.org/x/sys
     staticcheck:
       checks:
         - all

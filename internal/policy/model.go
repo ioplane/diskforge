@@ -69,6 +69,9 @@ const (
 	GateLiveSourceNotTmpfs GateCode = "live_source_not_tmpfs"
 	GateLiveMemory         GateCode = "live_memory"
 	GateLiveSysRq          GateCode = "live_sysrq"
+	GateLiveReboot         GateCode = "live_reboot_required"
+	GateConfirmation       GateCode = "confirmation_mismatch"
+	GateIdentityChanged    GateCode = "identity_changed"
 )
 
 // GateError is an internal fail-closed refusal.

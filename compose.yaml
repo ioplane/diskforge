@@ -7,9 +7,6 @@ x-verification-environment: &verification-environment
 
 x-verification-service: &verification-service
   image: localhost/ioplane/diskforge-dev:1.26.5
-  build:
-    context: .
-    dockerfile: Containerfile.dev
   working_dir: /workspace
   read_only: true
   network_mode: none

@@ -1,0 +1,3 @@
+29 23 253:0 / / rw,relatime - xfs /dev/mapper/ol-root rw
+30 29 0:25 / /dev/shm rw,nosuid,nodev - tmpfs tmpfs rw
+31 29 252:2 / /boot rw,relatime - xfs /dev/vda2 rw
