@@ -197,6 +197,7 @@ services:
       ACTIONS_ID_TOKEN_REQUEST_TOKEN: ${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}
     volumes:
       - .:/workspace:rw
+      - ${DISKFORGE_GIT_COMMON_DIR:-.git}:/git-common:ro
     command:
       - goreleaser
       - release
