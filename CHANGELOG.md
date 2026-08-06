@@ -65,4 +65,4 @@ not edit release sections manually.
 
 ## [Unreleased]
 
-[Unreleased]: https://github.com/ioplane/diskforge/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ioplane/diskforge/compare/v0.1.1...HEAD
