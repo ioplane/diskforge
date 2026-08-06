@@ -1,3 +1,4 @@
+---
 name: diskforge
 
 x-verification-environment: &verification-environment
@@ -61,7 +62,13 @@ services:
 
   fuzz:
     <<: *verification-service
-    command: ["go", "test", "-run=^$", "-fuzz=Fuzz", "-fuzztime=30s", "./internal/image"]
+    command:
+      - go
+      - test
+      - -run=^$
+      - -fuzz=Fuzz
+      - -fuzztime=30s
+      - ./internal/image
 
   vuln:
     <<: *verification-service

@@ -1,0 +1,10 @@
+---
+extends: default
+
+ignore: |
+  .beads/
+
+rules:
+  line-length:
+    level: error
+    max: 80
