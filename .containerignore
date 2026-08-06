@@ -1,0 +1,11 @@
+.git
+.beads
+.cache
+.idea
+.vscode
+dist
+coverage
+*.out
+*.test
+Containerfile*
+!Containerfile.dev

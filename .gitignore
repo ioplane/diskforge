@@ -1,0 +1,10 @@
+.beads/
+BEADS.md
+.cache/
+.idea/
+.vscode/
+coverage/
+dist/
+*.out
+*.test
+.DS_Store

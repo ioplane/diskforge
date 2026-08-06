@@ -1,0 +1,87 @@
+name: diskforge
+
+x-verification-environment: &verification-environment
+  CGO_ENABLED: "0"
+  HOME: /tmp/home
+  XDG_CACHE_HOME: /tmp/cache
+
+x-verification-service: &verification-service
+  image: localhost/ioplane/diskforge-dev:1.26.5
+  build:
+    context: .
+    dockerfile: Containerfile.dev
+  working_dir: /workspace
+  read_only: true
+  network_mode: none
+  security_opt:
+    - no-new-privileges=true
+  environment:
+    <<: *verification-environment
+  tmpfs:
+    - /tmp:rw,nosuid,nodev,size=2g
+  volumes:
+    - .:/workspace:ro
+
+services:
+  format:
+    <<: *verification-service
+    volumes:
+      - .:/workspace:rw
+    command: ["gofumpt", "-w", "."]
+
+  lint:
+    <<: *verification-service
+    command: ["golangci-lint", "run", "--config", ".golangci.yml"]
+
+  gopls:
+    <<: *verification-service
+    command:
+      - find
+      - .
+      - -type
+      - f
+      - -name
+      - "*.go"
+      - -not
+      - -path
+      - ./vendor/*
+      - -exec
+      - gopls
+      - check
+      - "{}"
+      - "+"
+
+  test:
+    <<: *verification-service
+    command: ["gotestsum", "--", "-count=1", "./..."]
+
+  race:
+    <<: *verification-service
+    environment:
+      <<: *verification-environment
+      CGO_ENABLED: "1"
+    command: ["gotestsum", "--", "-race", "-count=1", "./..."]
+
+  fuzz:
+    <<: *verification-service
+    command: ["go", "test", "-run=^$", "-fuzz=Fuzz", "-fuzztime=30s", "./internal/image"]
+
+  vuln:
+    <<: *verification-service
+    command: ["govulncheck", "./..."]
+
+  docs:
+    <<: *verification-service
+    command:
+      - sh
+      - -ec
+      - >-
+        markdownlint-cli2 "**/*.md" &&
+        cspell "**/*.{go,md,yaml,yml}" &&
+        yamllint --strict .
+
+  integration:
+    <<: *verification-service
+    privileged: true
+    security_opt: []
+    command: ["gotestsum", "--", "-tags=integration", "-count=1", "./..."]

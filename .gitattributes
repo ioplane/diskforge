@@ -1,0 +1,11 @@
+* text=auto eol=lf
+
+*.go text eol=lf
+*.md text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
+
+*.gz binary
+*.iso binary
+*.raw binary
+*.zst binary
