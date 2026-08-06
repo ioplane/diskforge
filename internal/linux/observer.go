@@ -19,6 +19,7 @@ const (
 	sectorBytes     int64 = 512
 	kilobyteBytes   int64 = 1024
 	mountFieldCount       = 6
+	swapFieldCount        = 2
 )
 
 var (
@@ -390,6 +391,7 @@ func (observer Observer) MountedDevices() (map[string]bool, error) {
 }
 
 // SwapDevices returns active swap device names plus backing dependencies.
+// File-backed swap is resolved through the filesystem that contains the file.
 func (observer Observer) SwapDevices() (map[string]bool, error) {
 	path := filepath.Join(observer.ProcRoot, "swaps")
 	// #nosec G304 -- procfs root is an explicit Observer dependency.
@@ -408,10 +410,29 @@ func (observer Observer) SwapDevices() (map[string]bool, error) {
 			continue
 		}
 		fields := strings.Fields(scanner.Text())
-		if len(fields) > 0 {
-			if err := observer.expand(result, filepath.Base(fields[0])); err != nil {
+		if len(fields) < swapFieldCount {
+			return nil, fmt.Errorf("%w: swaps line %q", ErrInvalidProcfs, scanner.Text())
+		}
+		source := unescapeMount(fields[0])
+		switch fields[1] {
+		case "partition":
+			if err := observer.expand(result, filepath.Base(source)); err != nil {
 				return nil, err
 			}
+		case "file":
+			_, backing, err := observer.Source(source)
+			if err != nil {
+				return nil, fmt.Errorf("resolve swap file %q: %w", source, err)
+			}
+			for _, name := range backing {
+				result[name] = true
+			}
+		default:
+			return nil, fmt.Errorf(
+				"%w: unsupported swap type %q",
+				ErrInvalidProcfs,
+				fields[1],
+			)
 		}
 	}
 	if err := scanner.Err(); err != nil {

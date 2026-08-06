@@ -139,6 +139,27 @@ func TestObserverReadsHostSafetyState(t *testing.T) {
 	}
 }
 
+func TestObserverResolvesFileBackedSwapThroughItsMount(t *testing.T) {
+	t.Parallel()
+
+	observer := linuxFixture(t)
+	swapsPath := filepath.Join(observer.ProcRoot, "swaps")
+	swaps := "Filename Type Size Used Priority\n/swapfile file 1048572 0 -2\n"
+	// #nosec G703 -- swapsPath is an exact path inside t.TempDir().
+	if err := os.WriteFile(swapsPath, []byte(swaps), 0o600); err != nil {
+		t.Fatalf("write file-backed swap fixture: %v", err)
+	}
+
+	devices, err := observer.SwapDevices()
+	if err != nil {
+		t.Fatalf("SwapDevices() error = %v", err)
+	}
+	want := map[string]bool{"dm-0": true, "dm-1": true, "vda": true, "vda2": true}
+	if !reflect.DeepEqual(devices, want) {
+		t.Fatalf("SwapDevices() = %#v, want %#v", devices, want)
+	}
+}
+
 func TestObserverProvesEveryBlockMountReadOnly(t *testing.T) {
 	t.Parallel()
 
