@@ -50,3 +50,56 @@ type Inspection struct {
 	Image             ImageIdentity  `json:"image"`
 	ConfirmationToken string         `json:"confirmation_token"`
 }
+
+// InspectRequest identifies the target and source to evaluate without writing.
+type InspectRequest struct {
+	Mode          Mode   `json:"mode"`
+	TargetPath    string `json:"target_path"`
+	ImagePath     string `json:"image_path"`
+	SHA256        string `json:"sha256"`
+	ExpectedBytes int64  `json:"expected_bytes"`
+}
+
+// StageRequest describes one bounded atomic image download.
+type StageRequest struct {
+	URL          string `json:"url"`
+	Destination  string `json:"destination"`
+	SHA256       string `json:"sha256"`
+	MaximumBytes int64  `json:"maximum_bytes"`
+}
+
+// StagedImage owns the descriptor retained after a verified atomic download.
+// Call Close when the metadata has been consumed.
+type StagedImage struct {
+	Path            string `json:"path"`
+	SHA256          string `json:"sha256"`
+	Format          string `json:"format"`
+	CompressedBytes int64  `json:"compressed_bytes"`
+
+	close func() error
+}
+
+// WriteRequest describes a guarded whole-disk write or complete dry run.
+type WriteRequest struct {
+	Mode          Mode   `json:"mode"`
+	TargetPath    string `json:"target_path"`
+	ImagePath     string `json:"image_path"`
+	SHA256        string `json:"sha256"`
+	ExpectedBytes int64  `json:"expected_bytes"`
+	Confirmation  string `json:"confirmation,omitempty"`
+	Reboot        bool   `json:"reboot"`
+	DryRun        bool   `json:"dry_run"`
+}
+
+// Progress reports monotonically increasing expanded bytes written.
+type Progress struct {
+	WrittenBytes  int64 `json:"written_bytes"`
+	ExpectedBytes int64 `json:"expected_bytes"`
+}
+
+// WriteResult reports either a verified dry run or a durable write.
+type WriteResult struct {
+	WrittenBytes int64      `json:"written_bytes"`
+	DryRun       bool       `json:"dry_run"`
+	Inspection   Inspection `json:"inspection"`
+}

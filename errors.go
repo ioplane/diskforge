@@ -1,6 +1,12 @@
 package diskforge
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+// ErrInvalidRequest reports malformed API input that has no gate code.
+var ErrInvalidRequest = errors.New("invalid diskforge request")
 
 // GateCode is a stable machine-readable safety refusal.
 type GateCode string
