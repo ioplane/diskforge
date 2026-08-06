@@ -2,7 +2,7 @@
 
 | Document | Contract |
 | --- | --- |
-| [Architecture](architecture.md) | Components, ownership, and trust boundaries |
+| [Architecture](architecture/README.md) | Components, ownership, and trust boundaries |
 | [Safety model](safety-model.md) | Destructive order and refusal behavior |
 | [CLI reference](cli.md) | Commands, streams, errors, and exit codes |
 | [Development](development.md) | Container-only build and verification workflow |

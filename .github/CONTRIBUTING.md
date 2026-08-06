@@ -15,7 +15,7 @@ Diskforge writes whole block devices. Changes are accepted only when their
 safety effect is explicit, tested, and reviewable.
 
 By participating, you agree to follow the [Code of Conduct](CODE_OF_CONDUCT.md)
-and license contributions under [Apache-2.0](LICENSE).
+and license contributions under [Apache-2.0](../LICENSE).
 
 ## Before opening a change
 
@@ -43,7 +43,7 @@ gate-code, or artifact-name changes. Release Please derives the SemVer change
 and changelog from these commits.
 
 Public names MUST follow the mandatory
-[naming contract](docs/contracts/naming.md). Human-readable error messages may
+[naming contract](../docs/contracts/naming.md). Human-readable error messages may
 improve; callers must use typed errors and stable gate codes.
 
 ## Development environment

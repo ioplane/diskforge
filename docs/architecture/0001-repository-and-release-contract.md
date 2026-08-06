@@ -58,6 +58,7 @@ not generate a second changelog.
 ```text
 .
 ├── .config/                       explicit quality and release configuration
+├── .github/                       community health and GitHub automation
 ├── cmd/diskforge/                 CLI parsing, JSON output, and exit mapping
 ├── internal/image/                verification, staging, raw/zstd streaming
 ├── internal/linux/                procfs, sysfs, mounts, swap, and syscalls
@@ -305,7 +306,8 @@ consistency, scope, and maintainability.
 ## 12. Repository governance and documentation
 
 All prose is English. Required root documents are `README.md`, `LICENSE`,
-`NOTICE`, `CHANGELOG.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
+`NOTICE`, and `CHANGELOG.md`. Community health and governance documents live
+under `.github`: `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`,
 `SUPPORT.md`, `GOVERNANCE.md`, and `MAINTAINERS.md`.
 
 GitHub metadata includes CODEOWNERS, issue forms, a pull-request template,

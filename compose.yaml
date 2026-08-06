@@ -142,8 +142,10 @@ services:
       - sh
       - -ec
       - >-
-        markdownlint-cli2 --config .config/markdownlint-cli2.yaml "**/*.md" &&
-        cspell --config .config/cspell.json "**/*.{go,md,yaml,yml}" &&
+        markdownlint-cli2 --config .config/markdownlint-cli2.yaml
+        "**/*.md" ".github/**/*.md" &&
+        cspell --config .config/cspell.json
+        "**/*.{go,md,yaml,yml}" ".github/**/*.{md,yaml,yml}" &&
         yamllint --config-file .config/yamllint.yml --strict .
 
   actions:

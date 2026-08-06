@@ -90,6 +90,35 @@ func TestReleaseStateAndArtifactsHaveOwnedLocation(t *testing.T) {
 	}
 }
 
+func TestCommunityAndArchitectureDocsHaveOwnedLocation(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	for _, path := range []string{
+		".github/CODE_OF_CONDUCT.md",
+		".github/CONTRIBUTING.md",
+		".github/GOVERNANCE.md",
+		".github/MAINTAINERS.md",
+		".github/SECURITY.md",
+		".github/SUPPORT.md",
+		"docs/architecture/README.md",
+	} {
+		assertPathExists(t, root, path)
+	}
+
+	for _, path := range []string{
+		"CODE_OF_CONDUCT.md",
+		"CONTRIBUTING.md",
+		"GOVERNANCE.md",
+		"MAINTAINERS.md",
+		"SECURITY.md",
+		"SUPPORT.md",
+		"docs/architecture.md",
+	} {
+		assertPathAbsent(t, root, path)
+	}
+}
+
 func repositoryRoot(t *testing.T) string {
 	t.Helper()
 

@@ -56,7 +56,7 @@ Diskforge does not make an untrusted image safe to boot.
 
 Every release provides SHA-256 checksums, SPDX SBOMs, a keyless signature, and
 GitHub build provenance. Verify artifacts as described in
-[docs/release.md](docs/release.md) before granting root access.
+[docs/release.md](../docs/release.md) before granting root access.
 
 ## Disclosure and credit
 
