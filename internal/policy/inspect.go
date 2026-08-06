@@ -6,15 +6,19 @@ import (
 	"slices"
 )
 
-// MinimumLiveAvailableBytes is the RAM headroom required before mlockall.
-const MinimumLiveAvailableBytes int64 = 512 * 1024 * 1024
+const (
+	// MinimumLiveAvailableBytes is the RAM headroom required before mlockall.
+	MinimumLiveAvailableBytes int64 = 512 * 1024 * 1024
+	deviceIdentityFieldCount        = 2
+	tmpfsFilesystem                 = "tmpfs"
+)
 
 func refuse(code GateCode, format string, arguments ...any) error {
 	return &GateError{Code: code, Message: fmt.Sprintf(format, arguments...)}
 }
 
-func deviceNames(target TargetIdentity) map[string]struct{} {
-	names := make(map[string]struct{}, len(target.Descendants)+2)
+func deviceNames(target *TargetIdentity) map[string]struct{} {
+	names := make(map[string]struct{}, len(target.Descendants)+deviceIdentityFieldCount)
 	for _, value := range target.Descendants {
 		if value != "" {
 			names[filepath.Base(value)] = struct{}{}
@@ -77,7 +81,7 @@ func Inspect(
 		return Inspection{}, err
 	}
 
-	targetDevices := deviceNames(target)
+	targetDevices := deviceNames(&target)
 	if sourceDevice, found := intersects(mapFromSlice(host.SourceBackingDevices), targetDevices); found {
 		return Inspection{}, refuse(
 			GateSourceOnTarget,
@@ -86,47 +90,8 @@ func Inspect(
 		)
 	}
 
-	if mode == ModeRescue {
-		if mounted, found := intersects(host.MountedDevices, targetDevices); found {
-			return Inspection{}, refuse(
-				GateTargetMounted,
-				"target descendant %s is mounted",
-				mounted,
-			)
-		}
-		if swap, found := intersects(host.SwapDevices, targetDevices); found {
-			return Inspection{}, refuse(
-				GateTargetSwap,
-				"target descendant %s is active swap",
-				swap,
-			)
-		}
-	} else {
-		if filepath.Clean(host.RootDisk) != target.CanonicalPath {
-			return Inspection{}, refuse(
-				GateLiveTargetNotRoot,
-				"live target must be the root disk",
-			)
-		}
-		if host.SourceFilesystem != "tmpfs" {
-			return Inspection{}, refuse(
-				GateLiveSourceNotTmpfs,
-				"live source must reside on tmpfs",
-			)
-		}
-		if host.MemoryAvailableBytes < MinimumLiveAvailableBytes {
-			return Inspection{}, refuse(
-				GateLiveMemory,
-				"live mode requires at least %d available bytes",
-				MinimumLiveAvailableBytes,
-			)
-		}
-		if !host.SysRqTriggerAvailable {
-			return Inspection{}, refuse(
-				GateLiveSysRq,
-				"live mode requires a writable SysRq trigger",
-			)
-		}
+	if err := inspectMode(mode, target, host, targetDevices); err != nil {
+		return Inspection{}, err
 	}
 
 	target.Descendants = slices.Clone(target.Descendants)
@@ -137,6 +102,43 @@ func Inspect(
 		Image:             image,
 		ConfirmationToken: token,
 	}, nil
+}
+
+func inspectMode(
+	mode Mode,
+	target TargetIdentity,
+	host HostObservation,
+	targetDevices map[string]struct{},
+) error {
+	if mode == ModeRescue {
+		if mounted, found := intersects(host.MountedDevices, targetDevices); found {
+			return refuse(GateTargetMounted, "target descendant %s is mounted", mounted)
+		}
+		if swap, found := intersects(host.SwapDevices, targetDevices); found {
+			return refuse(GateTargetSwap, "target descendant %s is active swap", swap)
+		}
+
+		return nil
+	}
+
+	if filepath.Clean(host.RootDisk) != target.CanonicalPath {
+		return refuse(GateLiveTargetNotRoot, "live target must be the root disk")
+	}
+	if host.SourceFilesystem != tmpfsFilesystem {
+		return refuse(GateLiveSourceNotTmpfs, "live source must reside on tmpfs")
+	}
+	if host.MemoryAvailableBytes < MinimumLiveAvailableBytes {
+		return refuse(
+			GateLiveMemory,
+			"live mode requires at least %d available bytes",
+			MinimumLiveAvailableBytes,
+		)
+	}
+	if !host.SysRqTriggerAvailable {
+		return refuse(GateLiveSysRq, "live mode requires a writable SysRq trigger")
+	}
+
+	return nil
 }
 
 func mapFromSlice(values []string) map[string]bool {

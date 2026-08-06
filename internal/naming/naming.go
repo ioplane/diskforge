@@ -2,6 +2,7 @@
 package naming
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 )
@@ -9,21 +10,24 @@ import (
 const (
 	maxArtifactNameLength = 255
 	maxLabelLength        = 63
+	semverComponentCount  = 3
 )
+
+var ErrInvalidArtifactName = errors.New("invalid artifact name")
 
 // ArtifactName returns the canonical release archive name for a stable tag.
 func ArtifactName(version, goos, goarch, extension string) (string, error) {
 	if !ValidSemverTag(version) {
-		return "", fmt.Errorf("invalid stable release tag %q", version)
+		return "", fmt.Errorf("%w: stable release tag %q", ErrInvalidArtifactName, version)
 	}
 	if !ValidLabel(goos) {
-		return "", fmt.Errorf("invalid operating system label %q", goos)
+		return "", fmt.Errorf("%w: operating system label %q", ErrInvalidArtifactName, goos)
 	}
 	if !ValidLabel(goarch) {
-		return "", fmt.Errorf("invalid architecture label %q", goarch)
+		return "", fmt.Errorf("%w: architecture label %q", ErrInvalidArtifactName, goarch)
 	}
 	if !validExtension(extension) {
-		return "", fmt.Errorf("invalid artifact extension %q", extension)
+		return "", fmt.Errorf("%w: artifact extension %q", ErrInvalidArtifactName, extension)
 	}
 
 	name := fmt.Sprintf(
@@ -34,7 +38,7 @@ func ArtifactName(version, goos, goarch, extension string) (string, error) {
 		extension,
 	)
 	if len(name) > maxArtifactNameLength {
-		return "", fmt.Errorf("artifact name exceeds %d bytes", maxArtifactNameLength)
+		return "", fmt.Errorf("%w: exceeds %d bytes", ErrInvalidArtifactName, maxArtifactNameLength)
 	}
 
 	return name, nil
@@ -47,7 +51,7 @@ func ValidSemverTag(value string) bool {
 	}
 
 	components := strings.Split(value[1:], ".")
-	if len(components) != 3 {
+	if len(components) != semverComponentCount {
 		return false
 	}
 
@@ -76,7 +80,7 @@ func validNumericIdentifier(value string) bool {
 
 // ValidLabel reports whether value is a lowercase RFC 1123-style label.
 func ValidLabel(value string) bool {
-	if len(value) == 0 || len(value) > maxLabelLength {
+	if value == "" || len(value) > maxLabelLength {
 		return false
 	}
 	if !isLowerAlphanumeric(value[0]) || !isLowerAlphanumeric(value[len(value)-1]) {
@@ -93,7 +97,7 @@ func ValidLabel(value string) bool {
 }
 
 func validExtension(value string) bool {
-	if len(value) == 0 || len(value) > maxLabelLength {
+	if value == "" || len(value) > maxLabelLength {
 		return false
 	}
 

@@ -1,0 +1,87 @@
+version: "2"
+
+run:
+  timeout: 10m
+  tests: true
+  modules-download-mode: readonly
+  allow-parallel-runners: true
+
+linters:
+  default: all
+  disable:
+    # Replaced by gomodguard_v2 and wsl_v5.
+    - gomodguard
+    - wsl
+    # These rules conflict with intentional zero values, error propagation,
+    # internal-package testing, and the versioned snake_case JSON contract.
+    - exhaustruct
+    - nlreturn
+    - noinlineerr
+    - tagliatelle
+    - testpackage
+    - wrapcheck
+    - wsl_v5
+  settings:
+    cyclop:
+      max-complexity: 15
+    funlen:
+      lines: 100
+      statements: 50
+    gocognit:
+      min-complexity: 20
+    gocritic:
+      enable-all: true
+      disabled-checks:
+        # Safety decisions intentionally use immutable value snapshots.
+        - hugeParam
+    govet:
+      enable-all: true
+      disable:
+        # Field ordering is part of the public data contract and is optimized
+        # for readability; pointer packing is not a correctness property.
+        - fieldalignment
+    depguard:
+      rules:
+        main:
+          allow:
+            - $gostd
+            - github.com/ioplane/diskforge
+            - github.com/klauspost/compress
+    staticcheck:
+      checks:
+        - all
+  exclusions:
+    generated: strict
+    warn-unused: true
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    rules:
+      - path: '(.+)_test\.go'
+        linters:
+          - cyclop
+          - err113
+          - funlen
+          - gocognit
+          - goconst
+          - mnd
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    gofumpt:
+      module-path: github.com/ioplane/diskforge
+  exclusions:
+    generated: strict
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+  fix: false
+
+severity:
+  default: error

@@ -68,6 +68,7 @@ services:
 
   vuln:
     <<: *verification-service
+    network_mode: bridge
     command: ["govulncheck", "./..."]
 
   docs:
