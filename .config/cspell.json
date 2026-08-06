@@ -9,6 +9,7 @@
     "CLOEXEC",
     "checksummed",
     "Containerfile",
+    "containerignore",
     "deadcode",
     "dantte",
     "Diskforge",

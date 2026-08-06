@@ -1,11 +1,124 @@
 package repository_test
 
 import (
+	"bytes"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
+	"sort"
+	"strings"
 	"testing"
 )
+
+func TestTrackedTopLevelLayout(t *testing.T) {
+	t.Parallel()
+
+	root := repositoryRoot(t)
+	unexpected := unexpectedTopLevelEntries(
+		trackedRepositoryPaths(t, root),
+		allowedTopLevelEntries(),
+	)
+	if len(unexpected) != 0 {
+		t.Fatalf("unexpected tracked top-level entries: %v", unexpected)
+	}
+}
+
+func TestUnexpectedTopLevelEntries(t *testing.T) {
+	t.Parallel()
+
+	tracked := []string{
+		"README.md",
+		"unexpected/file.go",
+		"unexpected/second.go",
+	}
+	want := []string{"unexpected"}
+	if got := unexpectedTopLevelEntries(tracked, allowedTopLevelEntries()); !slices.Equal(got, want) {
+		t.Fatalf("unexpectedTopLevelEntries() = %v, want %v", got, want)
+	}
+}
+
+func allowedTopLevelEntries() []string {
+	return []string{
+		".config",
+		".containerignore",
+		".editorconfig",
+		".gitattributes",
+		".github",
+		".gitignore",
+		"CHANGELOG.md",
+		"LICENSE",
+		"NOTICE",
+		"README.md",
+		"cmd",
+		"compose.yaml",
+		"deployments",
+		"diskforge.go",
+		"diskforge_internal_test.go",
+		"diskforge_test.go",
+		"docs",
+		"errors.go",
+		"go.mod",
+		"go.sum",
+		"internal",
+		"test",
+		"types.go",
+		"types_test.go",
+	}
+}
+
+func trackedRepositoryPaths(t *testing.T, root string) []string {
+	t.Helper()
+
+	if _, err := os.Stat(filepath.Join(root, ".git")); err != nil {
+		if os.IsNotExist(err) {
+			t.Skip("tracked layout requires a Git working tree")
+
+			return nil
+		}
+		t.Fatalf("inspect Git metadata: %v", err)
+	}
+
+	command := exec.CommandContext(t.Context(), "git", "-C", root, "ls-files", "-z")
+	output, err := command.Output()
+	if err != nil {
+		t.Fatalf("list tracked repository paths: %v", err)
+	}
+
+	fields := bytes.Split(output, []byte{0})
+	paths := make([]string, 0, len(fields))
+	for _, field := range fields {
+		if len(field) != 0 {
+			paths = append(paths, string(field))
+		}
+	}
+
+	return paths
+}
+
+func unexpectedTopLevelEntries(tracked, allowed []string) []string {
+	allowedSet := make(map[string]struct{}, len(allowed))
+	for _, entry := range allowed {
+		allowedSet[entry] = struct{}{}
+	}
+
+	unexpectedSet := make(map[string]struct{})
+	for _, path := range tracked {
+		topLevel, _, _ := strings.Cut(path, "/")
+		if _, ok := allowedSet[topLevel]; !ok {
+			unexpectedSet[topLevel] = struct{}{}
+		}
+	}
+
+	unexpected := make([]string, 0, len(unexpectedSet))
+	for entry := range unexpectedSet {
+		unexpected = append(unexpected, entry)
+	}
+	sort.Strings(unexpected)
+
+	return unexpected
+}
 
 func TestContainerDefinitionsHaveOwnedLocation(t *testing.T) {
 	t.Parallel()
