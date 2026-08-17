@@ -35,7 +35,7 @@ RUN npm install --global npm@${NPM_VERSION} \
       markdownlint-cli2@${MARKDOWNLINT_CLI2_VERSION} \
     && npm cache clean --force
 
-FROM docker.io/library/python:3.14.7-slim-trixie@sha256:83c1cebb322d099ac9e3a3a532ba74b0146d702838b25e4c75c02fa81ffeb910
+FROM docker.io/library/python:3.14.7-slim-trixie@sha256:ce40764625a4ff50df3548277632e7f96c4e77fe75fa848aae9885476e7df5a4
 
 ARG PATHSPEC_VERSION=1.1.1
 ARG PYYAML_VERSION=6.0.3
