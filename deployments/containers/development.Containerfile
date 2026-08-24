@@ -1,4 +1,4 @@
-FROM docker.io/library/golang:1.26.5-trixie@sha256:87ffdb09b6a2e29ff910748b745395e8a0299aa80b7c0551cdca9b55e3fd2b3e AS go-tools
+FROM docker.io/library/golang:1.27.0-trixie@sha256:6212da3924947f4b6a939df02ea627c13f338f1a41d6c3fcb0dd9d076eef46c4 AS go-tools
 
 ARG ACTIONLINT_VERSION=v1.7.12
 ARG DEADCODE_VERSION=v0.48.0
