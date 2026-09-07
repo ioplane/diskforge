@@ -21,7 +21,7 @@ RUN GOBIN=/opt/tools go install github.com/golangci/golangci-lint/v2/cmd/golangc
     && GOBIN=/opt/tools go install gotest.tools/gotestsum@${GOTESTSUM_VERSION} \
     && GOBIN=/opt/tools go install github.com/rhysd/actionlint/cmd/actionlint@${ACTIONLINT_VERSION}
 
-FROM docker.io/library/node:26.7.0-trixie-slim@sha256:298a542ccec8d9161ddac5427e05254838db3e23f0260c6a5bfb9278abbaaceb AS node-tools
+FROM docker.io/library/node:26.8.1-trixie-slim@sha256:c0753125a3789977aefe869cbebccf70e3cfd7ea84ca48547458f02e4f1d7146 AS node-tools
 
 ARG BEADS_VERSION=1.1.2
 ARG CSPELL_VERSION=10.0.1
